@@ -56,6 +56,11 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            // Dependencia principal de Coil 3 para Compose Multiplatform
+            implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc01")
+
+            // Necesitas el "Network Detector" para cargar imágenes por URL (HTTP)
+            implementation("io.coil-kt.coil3:coil-network-ktor3:3.0.0-rc01")
 
 
             // --- LIBRERÍAS DE VOYAGER AÑADIDAS ---
