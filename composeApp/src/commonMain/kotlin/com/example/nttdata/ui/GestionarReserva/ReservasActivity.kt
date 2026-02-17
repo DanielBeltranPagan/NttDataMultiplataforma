@@ -25,7 +25,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.rememberAsyncImagePainter
+import com.example.nttdata.ui.CancelarReserva.CancelarReservaActivity
+import com.example.nttdata.ui.ModificarReserva.paginaModificarReservaScreen
 import nttdata.composeapp.generated.resources.Res
 import nttdata.composeapp.generated.resources.logo
 
@@ -141,6 +146,7 @@ fun ReservasScreen() {
 
 @Composable
 fun ReservaItem(reserva: Reserva) {
+    val navigator: Navigator =LocalNavigator.currentOrThrow
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Color(0xFF0072BB)),
@@ -180,7 +186,7 @@ fun ReservaItem(reserva: Reserva) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = { /* TODO */ },
+                    onClick = { navigator.push(CancelarReservaActivity()) },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                     shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
@@ -190,7 +196,7 @@ fun ReservaItem(reserva: Reserva) {
                 }
 
                 Button(
-                    onClick = { /* TODO */ },
+                    onClick = {navigator.push(paginaModificarReservaScreen())},
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                     shape = RoundedCornerShape(20.dp),
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),

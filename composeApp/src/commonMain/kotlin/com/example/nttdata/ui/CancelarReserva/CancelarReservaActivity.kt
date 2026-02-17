@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 
 import org.jetbrains.compose.resources.painterResource
@@ -35,6 +36,8 @@ import coil3.compose.rememberAsyncImagePainter
 
 import com.example.nttdata.ui.GestionarReserva.Reserva
 import com.example.nttdata.ui.GestionarReserva.ReservaItem
+import com.example.nttdata.ui.GestionarReserva.ReservasActivity
+import kotlinx.coroutines.launch
 
 class CancelarReservaActivity : Screen {
     @Composable
@@ -45,6 +48,7 @@ class CancelarReservaActivity : Screen {
 
 @Composable
 fun CancelarReservaScreen() {
+    val navigator:Navigator=LocalNavigator.currentOrThrow
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -96,7 +100,7 @@ fun CancelarReservaScreen() {
                 workspace = "5b"
             )
 
-            ReservaItem(sampleReserva)
+            CancelarReservaItem(sampleReserva,navigator)
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -132,4 +136,73 @@ fun CancelarReservaScreen() {
         }
     }
 }
+@Composable
+fun CancelarReservaItem(reserva: Reserva, navigator: Navigator) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFF0072BB)),
+        shape = RoundedCornerShape(4.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            // Reservation Details
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = reserva.branch,
+                        color = Color(0xFF0072BB),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(text = "Fecha: ${reserva.date}", fontSize = 14.sp)
+                    Text(text = "Hora: ${reserva.time}", fontSize = 14.sp)
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Spacer(modifier = Modifier.height(24.dp)) // Approximate check alignment
+                    Text(text = "Espacio de trabajo: ${reserva.workspace}", fontSize = 14.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Divider(color = Color(0xFF0072BB), thickness = 1.dp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(
+                    onClick = { navigator.push(ReservasActivity()) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
+                    shape = RoundedCornerShape(20.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text(text = "No cancelar", fontSize = 12.sp)
+                }
+
+                Button(
+                    onClick = {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Reserva cancelada")
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
+                    shape = RoundedCornerShape(20.dp),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
+                    modifier = Modifier.height(36.dp)
+                ) {
+                    Text(text = "Cancelar reserva", fontSize = 12.sp)
+                }
+            }
+        }
+    }
+}

@@ -27,7 +27,11 @@ import org.jetbrains.compose.resources.painterResource
 import coil3.compose.rememberAsyncImagePainter
 import coil3.compose.AsyncImage
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.nttdata.ui.ModificarReserva.ModificarField
+import com.example.nttdata.ui.SeleccionarSitio.SeleccionAsientoActivity
 
 
 class ReservationActivityScreen: Screen{
@@ -40,6 +44,7 @@ class ReservationActivityScreen: Screen{
 @Composable
 fun ReservationScreen() {
     val scrollState = rememberScrollState()
+    val navigator: Navigator =LocalNavigator.currentOrThrow
 
     Column(
         modifier = Modifier
@@ -72,7 +77,7 @@ fun ReservationScreen() {
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { /* Action */ },
+                onClick = { navigator.push(SeleccionAsientoActivity()) },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier
@@ -80,7 +85,7 @@ fun ReservationScreen() {
                     .height(50.dp)
             ) {
                 Text(
-                    text = "Ver Disponibilidad",
+                    text = "Seleccionar sitio",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White

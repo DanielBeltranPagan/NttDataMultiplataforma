@@ -17,7 +17,12 @@ import androidx.compose.ui.text.font.FontWeight
 
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.nttdata.ui.CambiarSucursal.CambioSucursalActivity
+import com.example.nttdata.ui.GestionarReserva.ReservasActivity
+import com.example.nttdata.ui.RealizarReserva.ReservationActivityScreen
+import com.example.nttdata.ui.RealizarReserva.ReservationScreen
 
 class Pagina2 : Screen {
     @Composable
@@ -50,7 +55,7 @@ fun PantallaUtilidades() {
             // Botón 1: Reservar
             Button(
                 onClick = {
-                    // navigator.push(ReservationScreen()) // Cambia por tu clase Screen real
+                    navigator.push(ReservationActivityScreen())
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(15.dp),
@@ -62,7 +67,7 @@ fun PantallaUtilidades() {
             // Botón 2: Gestionar
             Button(
                 onClick = {
-                    // navigator.push(GestionarScreen())
+                    navigator.push(ReservasActivity())
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(15.dp),
@@ -73,7 +78,9 @@ fun PantallaUtilidades() {
 
             // Botón 3: Sucursal
             Button(
-                onClick = { /* navigator.push(SucursalScreen()) */ },
+                onClick = {
+                    navigator.push(CambioSucursalActivity())
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(15.dp),
                 modifier = buttonModifier

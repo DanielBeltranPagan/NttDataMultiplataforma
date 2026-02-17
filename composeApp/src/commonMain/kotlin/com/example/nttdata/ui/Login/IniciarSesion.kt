@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.Navigator
 import coil3.compose.rememberAsyncImagePainter // Nota: KMP usa Coil 3
+import com.example.nttdata.ui.Principal.Pagina2
 
 
 class paginaIniciarSesionScreen (
@@ -32,7 +34,7 @@ class paginaIniciarSesionScreen (
 
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(navigator: Navigator) {
     // Estados de los campos
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -119,7 +121,7 @@ fun LoginScreen() {
 
         // Botón Iniciar Sesión
         Button(
-            onClick = { inciarSesion(context)},
+            onClick = { navigator.push(Pagina2())},
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier

@@ -42,6 +42,8 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
+            implementation("androidx.activity:activity-compose:1.9.3")
+            implementation("androidx.compose.ui:ui-tooling-preview:1.7.5")
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
         }

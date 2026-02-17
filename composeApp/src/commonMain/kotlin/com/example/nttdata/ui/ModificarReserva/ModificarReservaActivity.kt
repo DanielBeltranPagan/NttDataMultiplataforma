@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import com.example.nttdata.ui.RealizarReserva.ReservationField
+import kotlinx.coroutines.launch
 import nttdata.composeapp.generated.resources.Res
 import nttdata.composeapp.generated.resources.logo
 import org.jetbrains.compose.resources.painterResource
@@ -39,6 +42,8 @@ class paginaModificarReservaScreen(
 @Composable
 fun ModificarScreen() {
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -70,7 +75,11 @@ fun ModificarScreen() {
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { /* Action */ },
+                onClick = {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Reserva cancelada")
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier

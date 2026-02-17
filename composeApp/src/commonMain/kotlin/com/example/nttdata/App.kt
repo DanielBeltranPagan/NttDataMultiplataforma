@@ -17,14 +17,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.CurrentScreen
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.nttdata.ui.CambiarSucursal.CambioSucursalActivity
+import com.example.nttdata.ui.GestionarReserva.ReservasActivity
 import com.example.nttdata.ui.Login.LoginScreen
 import com.example.nttdata.ui.Login.paginaIniciarSesionScreen
+import com.example.nttdata.ui.RealizarReserva.ReservationActivityScreen
+import com.example.nttdata.ui.RealizarReserva.ReservationScreen
+import com.example.nttdata.ui.SeleccionarSitio.SeleccionAsientoActivity
 import nttdata.composeapp.generated.resources.Res
 import nttdata.composeapp.generated.resources.logo
 import org.jetbrains.compose.resources.painterResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
+    val navigator = LocalNavigator.currentOrThrow
     MaterialTheme {
         // Navigator gestiona qué pantalla se ve
         Navigator(screen = paginaIniciarSesionScreen()) { navigator ->
@@ -68,7 +76,7 @@ fun App() {
                 bottomBar = {
                     // Solo se muestra si NO estamos en Login
                     if (!isLoginScreen) {
-                        MiBottomBarNavegacion()
+                        MiBottomBarNavegacion(navigator)
                     }
                 }
             ) { paddingValues ->
@@ -111,7 +119,7 @@ fun App() {
 }
 
 @Composable
-fun MiBottomBarNavegacion() {
+fun MiBottomBarNavegacion(navigator: Navigator) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -120,9 +128,35 @@ fun MiBottomBarNavegacion() {
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.Default.DateRange, "Reservar", tint = Color.White, modifier = Modifier.size(30.dp))
-        Icon(Icons.Default.DateRange, "Gestionar", tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(30.dp))
-        Icon(Icons.Default.Home, "Sucursales", tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(30.dp))
-        Icon(Icons.Default.CheckCircle, "Estado", tint = Color.Red, modifier = Modifier.size(30.dp))
-    }
+
+        IconButton(onClick = {
+                navigator.push(ReservasActivity())
+        }){
+            Icon(
+                Icons.Default.DateRange,
+                "Reservar",
+                tint = Color.White,
+                modifier = Modifier.size(30.dp))
+        }
+        IconButton(onClick = {
+            navigator.push(ReservationActivityScreen())
+        }){
+            Icon(Icons.Default.DateRange,
+                "Gestionar",
+                tint = Color.White.copy(alpha = 0.6f),
+                modifier = Modifier.size(30.dp))
+
+        }
+        IconButton(onClick = {
+            navigator.push(CambioSucursalActivity())
+        }){
+            Icon(
+                Icons.Default.Home,
+                "Sucursales",
+                tint = Color.White.copy(alpha = 0.6f),
+                modifier = Modifier.size(30.dp))
+
+        }
+
+   }
 }
