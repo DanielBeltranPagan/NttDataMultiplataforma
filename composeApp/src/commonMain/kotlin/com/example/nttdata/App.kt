@@ -1,4 +1,4 @@
-package com.example.nttdata // Asegúrate de que coincida con tu carpeta
+package com.example.nttdata
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,42 +29,37 @@ import com.example.nttdata.ui.SeleccionarSitio.SeleccionAsientoActivity
 import nttdata.composeapp.generated.resources.Res
 import nttdata.composeapp.generated.resources.logo
 import org.jetbrains.compose.resources.painterResource
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
-    val navigator = LocalNavigator.currentOrThrow
+    // SE ELIMINÓ LA LÍNEA: val navigator = LocalNavigator.currentOrThrow (Causaba el error)
+
     MaterialTheme {
-        // Navigator gestiona qué pantalla se ve
+        // Navigator gestiona qué pantalla se ve y nos entrega la variable 'navigator' funcional
         Navigator(screen = paginaIniciarSesionScreen()) { navigator ->
             var showLogoutDialog by remember { mutableStateOf(false) }
 
-            // COMPROBACIÓN: ¿Estamos en la pantalla de login?
+            // Comprobamos si la pantalla actual es la de login
             val isLoginScreen = navigator.lastItem is paginaIniciarSesionScreen
 
             Scaffold(
                 topBar = {
-                    // Solo se muestra si NO estamos en Login
                     if (!isLoginScreen) {
                         CenterAlignedTopAppBar(
                             title = {
+                                // AJUSTE AQUÍ: Altura fija para que no crezca infinito
                                 Image(
                                     painter = painterResource(Res.drawable.logo),
                                     contentDescription = "NTT DATA Logo",
                                     contentScale = ContentScale.Fit,
-                                    modifier = Modifier
-                                        .fillMaxHeight(0.9f)
-                                        .width(100.dp) // Valor más realista que 10000
-                                        .wrapContentWidth(),
+                                    modifier = Modifier.height(40.dp), // Altura razonable
                                     colorFilter = tint(Color.White)
                                 )
                             },
                             actions = {
                                 IconButton(onClick = { showLogoutDialog = true }) {
-                                    Icon(
-                                        imageVector = Icons.Default.AccountCircle,
-                                        contentDescription = "Perfil",
-                                        tint = Color.White
-                                    )
+                                    Icon(Icons.Default.AccountCircle, "Perfil", tint = Color.White)
                                 }
                             },
                             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -74,35 +69,28 @@ fun App() {
                     }
                 },
                 bottomBar = {
-                    // Solo se muestra si NO estamos en Login
                     if (!isLoginScreen) {
                         MiBottomBarNavegacion(navigator)
                     }
                 }
             ) { paddingValues ->
-                // Si es login, usamos Modifier.fillMaxSize() para que ocupe toda la pantalla
-                // Si no es login, aplicamos el padding para que las barras no tapen el contenido
-                val contentModifier = if (isLoginScreen) {
-                    Modifier.fillMaxSize()
-                } else {
-                    Modifier.fillMaxSize().padding(paddingValues)
-                }
-
-                Box(modifier = contentModifier) {
+                // IMPORTANTE: Aplicar paddingValues para que el contenido
+                // baje y no sea tapado por la TopBar azul
+                Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
                     CurrentScreen()
                 }
             }
 
-            // Lógica global de Cerrar Sesión
             if (showLogoutDialog) {
                 AlertDialog(
                     onDismissRequest = { showLogoutDialog = false },
                     title = { Text("Cerrar Sesión") },
                     text = { Text("¿Estás seguro de que deseas salir?") },
                     confirmButton = {
+                        // Cambiado popAll por replaceAll para evitar pantalla en blanco
                         TextButton(onClick = {
                             showLogoutDialog = false
-                            navigator.popAll()
+                            navigator.replaceAll(paginaIniciarSesionScreen())
                         }) {
                             Text("Sí, salir", color = Color.Red)
                         }
@@ -128,35 +116,35 @@ fun MiBottomBarNavegacion(navigator: Navigator) {
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         IconButton(onClick = {
-                navigator.push(ReservasActivity())
-        }){
+            navigator.push(ReservasActivity())
+        }) {
             Icon(
                 Icons.Default.DateRange,
                 "Reservar",
                 tint = Color.White,
-                modifier = Modifier.size(30.dp))
+                modifier = Modifier.size(30.dp)
+            )
         }
         IconButton(onClick = {
             navigator.push(ReservationActivityScreen())
-        }){
-            Icon(Icons.Default.DateRange,
+        }) {
+            Icon(
+                Icons.Default.Edit, // Cambiado icono para diferenciarlo del anterior
                 "Gestionar",
                 tint = Color.White.copy(alpha = 0.6f),
-                modifier = Modifier.size(30.dp))
-
+                modifier = Modifier.size(30.dp)
+            )
         }
         IconButton(onClick = {
             navigator.push(CambioSucursalActivity())
-        }){
+        }) {
             Icon(
                 Icons.Default.Home,
                 "Sucursales",
                 tint = Color.White.copy(alpha = 0.6f),
-                modifier = Modifier.size(30.dp))
-
+                modifier = Modifier.size(30.dp)
+            )
         }
-
-   }
+    }
 }

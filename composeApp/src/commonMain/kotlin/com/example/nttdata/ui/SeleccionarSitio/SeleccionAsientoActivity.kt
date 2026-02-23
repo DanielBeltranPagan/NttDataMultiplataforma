@@ -53,6 +53,7 @@ data class Asiento(
 @Composable
 fun SeleccionAsientoScreen() {
     var selectedAsientoId by remember { mutableStateOf<String?>(null) }
+    var showReservaDialog by remember { mutableStateOf(false) }
 
     // Mock data - Reusing coordinates verified in EstadoSucursalActivity
     val topCluster = listOf(
@@ -155,7 +156,7 @@ fun SeleccionAsientoScreen() {
                 .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
             Button(
-                onClick = { /* Acción de confirmar */ },
+                onClick = { showReservaDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier
@@ -170,6 +171,30 @@ fun SeleccionAsientoScreen() {
                     color = Color.White
                 )
             }
+        }
+        if (showReservaDialog) {
+            AlertDialog(
+                onDismissRequest = { showReservaDialog = false },
+                title = {
+                    Text(text = "Confirmacion de la reserva", style = MaterialTheme.typography.headlineSmall)
+                },
+                text = {
+                  Text(text = "Desea confirmar la reserva?")
+
+
+
+                },
+                confirmButton = {
+                    TextButton(onClick = { showReservaDialog = false }) {
+                        Text("Confirmar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showReservaDialog = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
         }
     }
 }
