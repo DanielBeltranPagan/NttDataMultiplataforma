@@ -68,8 +68,9 @@ class LoginViewModel : ViewModel() {
     private suspend fun validarEnServidor(id: Int, contrasena: String): Boolean {
         return try {
             val baseUrl = "http://10.0.2.2:8080"
-            // 3. Enviamos el OBJETO en el cuerpo (Body) de forma segura
-            val response: HttpResponse = httpClient.post("$baseUrl/api/usuarios/validar") {
+
+            // CORRECCIÓN: Añadimos el /id/ en la URL
+            val response: HttpResponse = httpClient.post("$baseUrl/api/usuarios/$id/validar") {
                 contentType(ContentType.Application.Json)
                 setBody(LoginRequest(id, contrasena))
             }
