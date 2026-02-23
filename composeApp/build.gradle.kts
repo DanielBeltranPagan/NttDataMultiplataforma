@@ -8,6 +8,8 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    // 1. Necesitas el plugin de serialización para que @Serializable funcione
+    kotlin("plugin.serialization") version "2.1.0"
 }
 
 kotlin {
@@ -41,32 +43,40 @@ kotlin {
     }
 
     sourceSets {
+        // Definimos versiones consistentes para evitar errores de resolución
+        val ktorVersion = "3.0.0"
+        val voyagerVersion = "1.1.0-beta02"
+        val coilVersion = "3.0.0-rc01"
+
         androidMain.dependencies {
-            implementation("androidx.activity:activity-compose:1.9.3")
-            implementation("androidx.compose.ui:ui-tooling-preview:1.7.5")
-            implementation(libs.compose.uiToolingPreview)
+
             implementation(libs.androidx.activity.compose)
+            // Motor de Ktor para Android
+            implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
         }
 
         commonMain.dependencies {
+            // --- KTOR & SERIALIZATION (Core para todas las plataformas) ---
+            implementation("io.ktor:ktor-client-core:$ktorVersion")
+            implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+            // --- COMPOSE & UI ---
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(compose.materialIconsExtended)
-            implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            // Dependencia principal de Coil 3 para Compose Multiplatform
-            implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc01")
 
-            // Necesitas el "Network Detector" para cargar imágenes por URL (HTTP)
-            implementation("io.coil-kt.coil3:coil-network-ktor3:3.0.0-rc01")
+            // --- COIL (Imágenes) ---
+            implementation("io.coil-kt.coil3:coil-compose:$coilVersion")
+            implementation("io.coil-kt.coil3:coil-network-ktor3:$coilVersion")
 
-
-            // --- LIBRERÍAS DE VOYAGER AÑADIDAS ---
-            val voyagerVersion = "1.1.0-beta02"
+            // --- VOYAGER (Navegación) ---
             implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
             implementation("cafe.adriel.voyager:voyager-screenmodel:$voyagerVersion")
             implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
@@ -77,6 +87,8 @@ kotlin {
         }
 
         jvmMain.dependencies {
+            // Motor de Ktor para Desktop
+            implementation("io.ktor:ktor-client-cio:$ktorVersion")
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
         }
@@ -94,30 +106,25 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+
+    // IMPORTANTE para Ktor: Evita duplicados en el empaquetado
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/INDEX.LIST"
+            excludes += "/META-INF/io.netty.versions.properties"
         }
     }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
-    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
 
-dependencies {
-    debugImplementation(libs.compose.uiTooling)
-}
-
 compose.desktop {
     application {
-        mainClass = "MainKt" // OJO: Verifica si es "MainKt" o "com.example.nttdata.MainKt"
-
+        mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.example.nttdata"

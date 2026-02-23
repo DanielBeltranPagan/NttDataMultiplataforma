@@ -20,11 +20,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter.Companion.tint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import com.example.nttdata.ui.RealizarReserva.ReservationField
+
 import kotlinx.coroutines.launch
 import nttdata.composeapp.generated.resources.Res
 import nttdata.composeapp.generated.resources.logo
@@ -67,10 +66,10 @@ fun ModificarScreen() {
             )
 
             // Form Fields
-            ReservationField(label = "Sucursal", value = "Castellon de la plana (UJI)")
-            ReservationField(label = "Fecha", value = "19/12/2025")
-            ReservationField(label = "Hora:", value = "10:00-13:00")
-            ReservationField(label = "Espacio de Trabajo Preferido:", value = "5b")
+//            ReservationField(label = "Sucursal", value = "Castellon de la plana (UJI)")
+//            ReservationField(label = "Fecha", value = "19/12/2025")
+//            ReservationField(label = "Hora:", value = "10:00-13:00")
+//            ReservationField(label = "Espacio de Trabajo Preferido:", value = "5b")
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -127,7 +126,6 @@ fun ModificarField(label: String, value: String) {
 }
 
 @Composable
-@Preview
 fun PreviewModificarScreen() {
     ModificarScreen()
 }
