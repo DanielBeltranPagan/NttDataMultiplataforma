@@ -147,22 +147,35 @@ fun CambioSucursalScreen(viewModel: CambiarSucursalScreenModel = viewModel()) {
             // 3. Botón Confirmar
             Button(
                 onClick = {
-                    val sucursalSeleccionada = viewModel.listaSucursales.find { it.nombre == viewModel.sucursalActualNombre }
-
-                    if (sucursalSeleccionada != null && SessionManager.idUsuario != null) {
-                        // 1. Lo mandamos a la base de datos (IntelliJ -> Postgres)
-                        viewModel.guardarCambioEnServidor(
-                            idUsuario = SessionManager.idUsuario!!,
-                            idSucursal = sucursalSeleccionada.id_sucursal!!
-                        )
-
-                        // 2. Lo guardamos en el móvil para esta sesión
-                        SessionManager.nombreSucursal = sucursalSeleccionada.nombre
-
-                        // 3. Volvemos atrás
-                        navigator.pop()
+                    // 1. Buscamos el objeto sucursal que coincida con el nombre guardado en el ViewModel
+                    val sucursalSeleccionada = viewModel.listaSucursales.find {
+                        it.nombre == viewModel.sucursalActualNombre
                     }
 
+                    val userId = SessionManager.idUsuario
+
+                    // 2. Verificamos que tengamos tanto al usuario como a la sucursal encontrada
+                    if (userId != null && sucursalSeleccionada != null) {
+
+                        // Extraemos el ID de forma segura
+                        val idSucursal = sucursalSeleccionada.id_sucursal
+
+                        if (idSucursal != null) {
+                            // 3. Mandamos el ID al servidor (IntelliJ)
+                            viewModel.guardarCambioEnServidor(
+                                idUsuario = userId,
+                                idSucursal = idSucursal
+                            )
+
+                            // 4. Actualizamos el SessionManager local con los datos nuevos
+                            SessionManager.nombreSucursal = sucursalSeleccionada.nombre
+                            // Si tu SessionManager guarda el ID, hazlo también:
+                            // SessionManager.idSucursal = idSucursal
+
+                            // 5. Volvemos atrás
+                            navigator.pop()
+                        }
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(20.dp),
@@ -170,7 +183,6 @@ fun CambioSucursalScreen(viewModel: CambiarSucursalScreenModel = viewModel()) {
             ) {
                 Text(text = "Confirmar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-
             Spacer(modifier = Modifier.height(24.dp))
         }
     }

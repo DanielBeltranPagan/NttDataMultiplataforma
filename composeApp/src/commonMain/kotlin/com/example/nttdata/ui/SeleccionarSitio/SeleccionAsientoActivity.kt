@@ -187,7 +187,7 @@ fun SeleccionAsientoScreen() {
                 confirmButton = {
                     TextButton(onClick = {
                         showReservaDialog = false
-                        navigator.push(ReservasActivity(reservasViewModel = ReservasViewModel()))
+                        navigator.push(ReservasActivity())
                     }) {
                         Text("Confirmar")
                     }

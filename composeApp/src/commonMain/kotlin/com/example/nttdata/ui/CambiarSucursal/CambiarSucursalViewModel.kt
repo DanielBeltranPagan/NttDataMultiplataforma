@@ -56,7 +56,7 @@ class CambiarSucursalScreenModel : ViewModel() {
             try {
                 // Enviamos un PUT al endpoint de tu API en IntelliJ
                 // La URL dependerá de cómo tengas el Controller en Spring Boot
-                val response = httpClient.put("http://10.0.2.2:8080/api/usuarios/$idUsuario/cambiar-sucursal") {
+                val response = httpClient.put("http://nttdatabackend-env.eba-uxhfxnfh.us-east-1.elasticbeanstalk.com/api/usuarios/$idUsuario/sucursal") {
                     parameter("idSucursal", idSucursal)
                 }
 
