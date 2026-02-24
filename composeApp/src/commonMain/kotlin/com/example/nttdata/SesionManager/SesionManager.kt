@@ -12,6 +12,8 @@ object SessionManager {
     var nombreSucursal by mutableStateOf("Seleccione sucursal")
     var rango by mutableStateOf("USER")
 
+    val estaLogueado: Boolean get() = idUsuario != null
+
 fun cerrarSesion() {
    idUsuario = null
    correo = ""

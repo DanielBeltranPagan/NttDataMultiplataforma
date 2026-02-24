@@ -8,7 +8,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
-    // 1. Necesitas el plugin de serialización para que @Serializable funcione
+    // Usamos el alias si está en el catálogo, o la forma estándar:
     kotlin("plugin.serialization") version "2.1.0"
 }
 
@@ -43,61 +43,52 @@ kotlin {
     }
 
     sourceSets {
-        // Definimos versiones consistentes para evitar errores de resolución
+        // Centralizamos versiones que no están en el libs.versions.toml
         val ktorVersion = "3.0.0"
         val voyagerVersion = "1.1.0-beta02"
         val coilVersion = "3.0.0-rc01"
 
         androidMain.dependencies {
-
             implementation(libs.androidx.activity.compose)
-            // Motor de Ktor para Android
             implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
-            implementation("network.chaintech:kmp-date-time-picker:1.0.3")
+
+            // ACTUALIZADO: La versión 1.0.3 da error con Compose 1.7.x
+            implementation("network.chaintech:kmp-date-time-picker:1.0.5")
         }
 
         commonMain.dependencies {
-            // --- KTOR & SERIALIZATION (Core para todas las plataformas) ---
+            // --- KTOR & SERIALIZATION ---
             implementation("io.ktor:ktor-client-core:$ktorVersion")
             implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
             implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-            // --- COMPOSE & UI ---
-            implementation(libs.compose.runtime)
-            implementation(libs.compose.foundation)
-            implementation(libs.compose.material3)
-            implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
+
+            // --- COMPOSE CORE (Usa el objeto 'compose' del plugin, es más seguro) ---
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.ui)
+            implementation(compose.components.resources)
             implementation(compose.materialIconsExtended)
+
+            // --- LIFECYCLE ---
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            implementation("org.jetbrains.compose.material3:material3:1.7.1")
-
-            // También asegúrate de que el runtime sea consistente
-            implementation("org.jetbrains.compose.runtime:runtime:1.7.1")
-
-
-            // --- COIL (Imágenes) ---
+            // --- COIL ---
             implementation("io.coil-kt.coil3:coil-compose:$coilVersion")
             implementation("io.coil-kt.coil3:coil-network-ktor3:$coilVersion")
 
-            // --- VOYAGER (Navegación) ---
+            // --- VOYAGER ---
             implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
             implementation("cafe.adriel.voyager:voyager-screenmodel:$voyagerVersion")
             implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
         }
 
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-        }
-
         jvmMain.dependencies {
-            // Motor de Ktor para Desktop
             implementation("io.ktor:ktor-client-cio:$ktorVersion")
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-
         }
     }
 }
@@ -114,7 +105,6 @@ android {
         versionName = "1.0"
     }
 
-    // IMPORTANTE para Ktor: Evita duplicados en el empaquetado
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"

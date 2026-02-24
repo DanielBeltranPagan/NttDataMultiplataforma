@@ -38,17 +38,18 @@ class paginaIniciarSesionScreen : Screen {
     @Composable
     fun LoginScreen(
         navigator: Navigator,
+        // Usamos el ViewModel que ya tiene la lógica de Ktor y SessionManager
         viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     ) {
         // Manejo de navegación tras login exitoso
         LaunchedEffect(viewModel.loginExitoso) {
             if (viewModel.loginExitoso) {
-                navigator.push(Pagina2())
+                // Usamos replaceAll para que el usuario no pueda volver atrás al login con el botón del móvil
+                navigator.replaceAll(Pagina2())
                 viewModel.navegacionCompletada()
             }
         }
 
-        // Estructura principal con Scaffold
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
@@ -58,20 +59,19 @@ class paginaIniciarSesionScreen : Screen {
                             contentDescription = "NTT DATA Logo",
                             contentScale = ContentScale.Fit,
                             modifier = Modifier.height(75.dp),
-                            colorFilter = tint(Color.White) // Logo en blanco sobre fondo azul
+                            colorFilter = tint(Color.White)
                         )
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color(0xFF0072BB) // Azul NTT DATA
+                        containerColor = Color(0xFF0072BB)
                     )
                 )
             }
         ) { paddingValues ->
-            // El Box contiene el fondo y el scroll
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues) // Evita que la barra tape el contenido
+                    .padding(paddingValues)
                     .background(Color.White)
             ) {
                 Column(
@@ -89,14 +89,15 @@ class paginaIniciarSesionScreen : Screen {
                         color = Color(0xFF333333)
                     )
 
-                    // Campo Usuario
+                    // Campo ID Usuario (ahora vinculado a la lógica de Int en el ViewModel)
                     OutlinedTextField(
                         value = viewModel.username,
                         onValueChange = { viewModel.username = it },
-                        label = { Text("ID de usuario") },
+                        label = { Text("Email de usuario") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(10.dp),
+                        enabled = !viewModel.isLoading // Bloquear edición mientras carga
                     )
 
                     // Campo Contraseña
@@ -107,28 +108,33 @@ class paginaIniciarSesionScreen : Screen {
                         singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(10.dp),
+                        enabled = !viewModel.isLoading // Bloquear edición mientras carga
                     )
 
-                    // Mensaje de Error
+                    // Mensaje de Error dinámico (viene de la respuesta del servidor)
                     if (viewModel.errorMessage.isNotEmpty()) {
                         Text(
                             text = viewModel.errorMessage,
                             color = Color.Red,
                             fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Botón Iniciar Sesión
+                    // Botón Iniciar Sesión con estado de carga
                     Button(
                         onClick = { viewModel.iniciarSesion() },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF0072BB),
+                            disabledContainerColor = Color(0xFF80B9DD) // Color más claro si está cargando
+                        ),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().height(55.dp),
-                        enabled = !viewModel.isLoading
+                        enabled = !viewModel.isLoading // Deshabilitar click repetido
                     ) {
                         if (viewModel.isLoading) {
                             CircularProgressIndicator(

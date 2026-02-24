@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.nttdata.SesionManager.SessionManager
 import kotlinx.coroutines.launch
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -23,27 +25,41 @@ import kotlinx.serialization.json.Json
 data class LoginRequest(
     val id: Int,
     val contrasena: String
+
+)
+@Serializable
+data class LoginResponse(
+    val id: Int,
+    val nombre: String,
+    val contrasena: String,
+    val correo: String? = null,
+    val rango: String? = "USER"
 )
 
 class LoginViewModel : ViewModel() {
+    // Estados de la UI
     var username by mutableStateOf("")
     var password by mutableStateOf("")
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf("")
     var loginExitoso by mutableStateOf(false)
 
-    // 2. Configuramos el cliente con el "Negociador"
+    // Cliente HTTP configurado para JSON
     private val httpClient = HttpClient {
         install(ContentNegotiation) {
             json(Json {
-                ignoreUnknownKeys = true
+                ignoreUnknownKeys = true // Ignora campos que no estén en UsuarioResponse
+                prettyPrint = true
+                isLenient = true
             })
         }
     }
 
     fun iniciarSesion() {
-        if (username.isBlank() || password.isBlank()) {
-            errorMessage = "Por favor, rellena todos los campos."
+        val idInt = username.toIntOrNull()
+
+        if (idInt == null || password.isBlank()) {
+            errorMessage = "Introduce un ID numérico y una contraseña."
             return
         }
 
@@ -51,38 +67,42 @@ class LoginViewModel : ViewModel() {
             isLoading = true
             errorMessage = ""
             try {
-                val exito = validarEnServidor(username.toInt(), password)
-                if (exito) {
+                // LLAMADA A TU API
+                // Nota: 10.0.2.2 es el localhost para el emulador de Android.
+                // Si usas iOS o Desktop, usa "localhost" o tu IP local.
+                val response: HttpResponse = httpClient.post("http://nttdatabackend-env.eba-uxhfxnfh.us-east-1.elasticbeanstalk.com/api/usuarios/$idInt/validar") {
+                    contentType(ContentType.Application.Json)
+                    setBody(LoginRequest(id = idInt, contrasena = password))
+                }
+
+                if (response.status.value == 200) {
+                    val usuarioData = response.body<LoginResponse>()
+
+                    // 2. Llenamos el SessionManager con la información del servidor
+                    SessionManager.idUsuario = usuarioData.id
+                    SessionManager.correo = usuarioData.correo ?: ""
+                    SessionManager.rango = usuarioData.rango ?: "USER"
+
+                    // 3. Avisamos a la UI para navegar
                     loginExitoso = true
                 } else {
-                    errorMessage = "Usuario o contraseña incorrectos"
+                    errorMessage = "ID o contraseña incorrectos."
                 }
             } catch (e: Exception) {
-                errorMessage = "Error al conectar con el servidor"
+                e.printStackTrace()
+                errorMessage = "Error de conexión. ¿Está la API encendida?"
             } finally {
                 isLoading = false
             }
         }
     }
 
-    private suspend fun validarEnServidor(id: Int, contrasena: String): Boolean {
-        return try {
-            val baseUrl = "http://10.0.2.2:8080"
-
-            // CORRECCIÓN: Añadimos el /id/ en la URL
-            val response: HttpResponse = httpClient.post("$baseUrl/api/usuarios/$id/validar") {
-                contentType(ContentType.Application.Json)
-                setBody(LoginRequest(id, contrasena))
-            }
-
-            response.status.value == 200
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
-
     fun navegacionCompletada() {
         loginExitoso = false
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        httpClient.close() // Cerramos el cliente al destruir el ViewModel
     }
 }
