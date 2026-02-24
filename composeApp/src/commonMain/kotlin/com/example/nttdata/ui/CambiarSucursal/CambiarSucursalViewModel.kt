@@ -12,6 +12,9 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -54,20 +57,30 @@ class CambiarSucursalScreenModel : ViewModel() {
     fun guardarCambioEnServidor(idUsuario: Int, idSucursal: Int) {
         viewModelScope.launch {
             try {
-                // Enviamos un PUT al endpoint de tu API en IntelliJ
-                // La URL dependerá de cómo tengas el Controller en Spring Boot
-                val response = httpClient.put("http://nttdatabackend-env.eba-uxhfxnfh.us-east-1.elasticbeanstalk.com/api/usuarios/$idUsuario/sucursal") {
-                    parameter("idSucursal", idSucursal)
+                val response = httpClient.put(
+                    "http://nttdatabackend-env.eba-uxhfxnfh.us-east-1.elasticbeanstalk.com/api/usuarios/$idUsuario/sucursal"
+                ) {
+                    // Forzamos el tipo de contenido a JSON
+                    contentType(io.ktor.http.ContentType.Application.Json)
+                    // Enviamos el ID de la sucursal
+                    setBody(idSucursal)
                 }
 
                 if (response.status.value in 200..299) {
-                    println("¡Guardado en la base de datos con éxito!")
+                    println("¡Éxito! Status: ${response.status}")
+                    // Opcional: imprimir el cuerpo para verificar qué devolvió el servidor
+                    println("Respuesta servidor: ${response.bodyAsText()}")
+                } else {
+                    println("Error del servidor: ${response.status.value} - ${response.bodyAsText()}")
                 }
+
             } catch (e: Exception) {
-                println("Error al guardar: ${e.message}")
+                println("Error de red/conexión: ${e.message}")
+                e.printStackTrace()
             }
         }
     }
+
 
     fun actualizarSeleccion(nombre: String) {
         sucursalActualNombre = nombre
