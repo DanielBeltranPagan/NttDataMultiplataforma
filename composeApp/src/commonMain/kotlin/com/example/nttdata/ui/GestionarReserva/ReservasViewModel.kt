@@ -35,7 +35,7 @@ class ReservasViewModel : ViewModel() {
             try {
                 // Llamada a tu API de Spring Boot
                 val response: List<ReservaPuestoDTO> = httpClient
-                    .get("http://10.0.2.2:8080/api/reservas/usuario/$userId")
+                    .get("http://nttdatabackend-env.eba-uxhfxnfh.us-east-1.elasticbeanstalk.com/api/reservas/usuario/$userId")
                     .body()
                 listaReservas = response
             } catch (e: Exception) {

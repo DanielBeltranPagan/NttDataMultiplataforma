@@ -29,9 +29,8 @@ data class LoginRequest(
 )
 @Serializable
 data class LoginResponse(
-    val id: Int,
-    val nombre: String,
-    val contrasena: String,
+    val id: Int=0,
+    val contrasena: String="",
     val correo: String? = null,
     val rango: String? = "USER"
 )

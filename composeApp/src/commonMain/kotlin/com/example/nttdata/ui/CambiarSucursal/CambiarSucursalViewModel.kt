@@ -40,7 +40,7 @@ class CambiarSucursalScreenModel : ViewModel() {
             isLoading = true
             try {
                 // 2. Ahora httpClient y .body() funcionarán porque tienen los imports correctos
-                val response: List<SucursalDTO> = httpClient.get("http://10.0.2.2:8080/api/sucursales").body()
+                val response: List<SucursalDTO> = httpClient.get("http://nttdatabackend-env.eba-uxhfxnfh.us-east-1.elasticbeanstalk.com/api/sucursales").body()
                 listaSucursales = response
             } catch (e: Exception) {
                 // Es buena idea imprimir el error para saber qué falla (ej: conexión)
