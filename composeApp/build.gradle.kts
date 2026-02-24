@@ -53,6 +53,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             // Motor de Ktor para Android
             implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
+            implementation("network.chaintech:kmp-date-time-picker:1.0.3")
         }
 
         commonMain.dependencies {
@@ -61,7 +62,6 @@ kotlin {
             implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
             implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-
             // --- COMPOSE & UI ---
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
@@ -71,6 +71,12 @@ kotlin {
             implementation(compose.materialIconsExtended)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            implementation("org.jetbrains.compose.material3:material3:1.7.1")
+
+            // También asegúrate de que el runtime sea consistente
+            implementation("org.jetbrains.compose.runtime:runtime:1.7.1")
+
 
             // --- COIL (Imágenes) ---
             implementation("io.coil-kt.coil3:coil-compose:$coilVersion")
@@ -91,6 +97,7 @@ kotlin {
             implementation("io.ktor:ktor-client-cio:$ktorVersion")
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+
         }
     }
 }

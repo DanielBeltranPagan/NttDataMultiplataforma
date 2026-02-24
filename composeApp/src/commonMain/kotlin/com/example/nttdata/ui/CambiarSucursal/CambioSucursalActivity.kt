@@ -16,13 +16,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter.Companion.tint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.nttdata.SesionManager.SessionManager
+import com.example.nttdata.ui.RealizarReserva.ReservationActivityScreen
+import com.example.nttdata.ui.RealizarReserva.ReservationScreen
+import com.example.nttdata.ui.RealizarReserva.ReservationViewModel
 
 
 class CambioSucursalActivity : Screen {
@@ -33,10 +39,9 @@ class CambioSucursalActivity : Screen {
 }
 
 @Composable
-fun CambioSucursalScreen() {
+fun CambioSucursalScreen(viewModel: CambiarSucursalScreenModel = viewModel()) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf("Seleccione una sucursal") }
-    val options = listOf("Sucursal Castellón", "Sucursal Valencia", "Sucursal Madrid", "Sucursal Barcelona")
+    val navigator = LocalNavigator.currentOrThrow
 
     Column(
         modifier = Modifier
@@ -44,15 +49,14 @@ fun CambioSucursalScreen() {
             .background(Color.White)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-
-        // Content
+        // Contenido principal
         Column(
             modifier = Modifier
                 .weight(1f)
                 .padding(24.dp)
         ) {
-            
-            // Sucursal Actual
+
+            // 1. Mostrar Sucursal Actual (Reactivo al ViewModel)
             Text(
                 text = "Sucursal actual",
                 color = Color(0xFF0072BB),
@@ -60,122 +64,115 @@ fun CambioSucursalScreen() {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             Surface(
                 color = Color(0xFFE3F2FD),
                 shape = RoundedCornerShape(4.dp),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
             ) {
                 Text(
-                    text = "Castellon de la plana (UJI)",
+                    text = viewModel.sucursalActualNombre,
                     modifier = Modifier.padding(12.dp),
                     fontWeight = FontWeight.SemiBold
                 )
             }
 
-            // Consultar Estado Button
+            // Botón Consultar Estado
             Button(
-                onClick = { /* TODO */ },
+                onClick = {
+                    navigator.push(ReservationActivityScreen(reservationViewModel = ReservationViewModel()))
+                          },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
+                modifier = Modifier.fillMaxWidth().height(48.dp)
             ) {
-                Text(text = "Consultar Estado", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Hacer Reserva en esta sucursal", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Cambiar Sucursal Dropdown
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
+            // 2. Dropdown con datos reales del ViewModel
+            Box(modifier = Modifier.fillMaxWidth()) {
                 Button(
                     onClick = { expanded = true },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                     shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(0.dp), // Custom padding for layout
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxSize(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "Cambiar sucursal", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        }
-                        
-                        // Divider line simulation
-                        Box(
-                            modifier = Modifier
-                                .width(1.dp)
-                                .fillMaxHeight()
-                                .background(Color.White.copy(alpha = 0.5f))
+                        Text(
+                            text = if (viewModel.isLoading) "Cargando..." else "Cambiar sucursal",
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Center,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
                         )
-
-                        Box(
-                            modifier = Modifier
-                                .width(48.dp)
-                                .fillMaxHeight(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = "Expand",
-                                tint = Color.White,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = null
+                        )
                     }
                 }
 
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    modifier = Modifier
-                        .fillMaxWidth(0.9f) // Adjust width to match button approximately
-                        .background(Color.White)
+                    modifier = Modifier.fillMaxWidth(0.9f).background(Color.White)
                 ) {
-                    options.forEach { option ->
+                    // Iteramos sobre la lista que viene de la base de datos
+                    viewModel.listaSucursales.forEach { sucursal ->
                         DropdownMenuItem(
-                            text = { Text(text = option) },
+                            text = { Text(text = sucursal.nombre) },
                             onClick = {
-                                selectedOption = option
+                                viewModel.actualizarSeleccion(sucursal.nombre)
                                 expanded = false
                             }
                         )
                     }
+
+                    if (viewModel.listaSucursales.isEmpty() && !viewModel.isLoading) {
+                        DropdownMenuItem(
+                            text = { Text("No hay sucursales disponibles") },
+                            onClick = { expanded = false }
+                        )
+                    }
                 }
             }
-            
-            // Spacer to push Confirmar to bottom area (visually)
+
             Spacer(modifier = Modifier.weight(1f))
 
-            // Confirmar Button
+            // 3. Botón Confirmar
             Button(
-                onClick = { /* TODO */ },
+                onClick = {
+                    val sucursalSeleccionada = viewModel.listaSucursales.find { it.nombre == viewModel.sucursalActualNombre }
+
+                    if (sucursalSeleccionada != null && SessionManager.idUsuario != null) {
+                        // 1. Lo mandamos a la base de datos (IntelliJ -> Postgres)
+                        viewModel.guardarCambioEnServidor(
+                            idUsuario = SessionManager.idUsuario!!,
+                            idSucursal = sucursalSeleccionada.id_sucursal!!
+                        )
+
+                        // 2. Lo guardamos en el móvil para esta sesión
+                        SessionManager.nombreSucursal = sucursalSeleccionada.nombre
+
+                        // 3. Volvemos atrás
+                        navigator.pop()
+                    }
+
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(20.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
+                modifier = Modifier.fillMaxWidth().height(50.dp)
             ) {
                 Text(text = "Confirmar", fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
-
-
     }
 }
 

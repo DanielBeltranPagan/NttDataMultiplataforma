@@ -22,19 +22,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.resources.painterResource
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.rememberAsyncImagePainter
+import com.example.nttdata.DTOS.ReservaPuestoDTO
 import com.example.nttdata.ui.CancelarReserva.CancelarReservaActivity
 import com.example.nttdata.ui.ModificarReserva.paginaModificarReservaScreen
 import nttdata.composeapp.generated.resources.Res
 import nttdata.composeapp.generated.resources.logo
 
 
-class ReservasActivity: Screen{
+class ReservasActivity(val reservasViewModel: ReservasViewModel= ReservasViewModel()): Screen{
     @Composable
     override fun Content() {
         ReservasScreen()
@@ -50,40 +52,15 @@ data class Reserva(
 )
 
 @Composable
-fun ReservasScreen() {
-    // Sample Data based on image
-    val reservations = listOf(
-        Reserva("Sucursal Castellón:", "19/12/2025", "10:00-13:00", "5b"),
-        Reserva("Sucursal Castellón:", "19/12/25", "17:00-21:00", "5b"),
-        Reserva("Sucursal Castellón:", "20/12/25", "08:00-15:00", "5b")
-    )
-
+fun ReservasScreen(viewModel: ReservasViewModel= ReservasViewModel()) {
+    val reservas = viewModel.listaReservas
+    val isLoading = viewModel.isLoading
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-        // Header
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp)
-                .background(Color(0xFF0072BB))
-                .padding( horizontal = 16.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Image(
-                painter = painterResource(Res.drawable.logo),
-                contentDescription = "NTT DATA Logo",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .fillMaxHeight(0.9f)
-                    .width(10000.dp)
-                    .wrapContentWidth(),
-                colorFilter =  tint(Color.White)
-            )
-        }
 
         // Title
         Text(
@@ -95,56 +72,37 @@ fun ReservasScreen() {
         )
 
         // List Content
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(reservations) { reservation ->
-                ReservaItem(reservation)
+
+        if (isLoading) {
+            // Mostramos un círculo de carga si está bajando los datos
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Color(0xFF0072BB))
+            }
+        } else if (reservas.isEmpty()) {
+            // Mensaje por si el usuario no tiene reservas
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("No tienes reservas activas", color = Color.Gray)
+            }
+        } else {
+            // Lista real
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(reservas) { reserva ->
+                    ReservaItem(reserva)
+                }
             }
         }
 
-        // Footer Navigation
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .background(Color(0xFF0072BB)),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.DateRange,
-                contentDescription = "Reservar",
-                tint = Color.White,
-                modifier = Modifier.size(30.dp)
-            )
-            Icon(
-                imageVector = Icons.Default.DateRange,
-                contentDescription = "Gestionar",
-                tint = Color.White.copy(alpha = 0.6f),
-                modifier = Modifier.size(30.dp)
-            )
-            Icon(
-                imageVector = Icons.Default.Home,
-                contentDescription = "Sucursales",
-                tint = Color.White.copy(alpha = 0.6f),
-                modifier = Modifier.size(30.dp)
-            )
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Estado",
-                tint = Color.Red,
-                modifier = Modifier.size(30.dp)
-            )
-        }
+
     }
 }
 
 @Composable
-fun ReservaItem(reserva: Reserva) {
+fun ReservaItem(reserva: ReservaPuestoDTO) {
     val navigator: Navigator =LocalNavigator.currentOrThrow
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -160,18 +118,18 @@ fun ReservaItem(reserva: Reserva) {
             ) {
                 Column {
                     Text(
-                        text = reserva.branch,
+                        text = reserva.idReserva.toString(),
                         color = Color(0xFF0072BB),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "Fecha: ${reserva.date}", fontSize = 14.sp)
-                    Text(text = "Hora: ${reserva.time}", fontSize = 14.sp)
+                    Text(text = "Fecha: ${reserva.fecha}", fontSize = 14.sp)
+                    Text(text = "Hora: ${reserva.horaInicio}", fontSize = 14.sp)
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Spacer(modifier = Modifier.height(24.dp)) // Approximate check alignment
-                    Text(text = "Espacio de trabajo: ${reserva.workspace}", fontSize = 14.sp)
+                    Text(text = "Espacio de trabajo: ${reserva.idPuesto}", fontSize = 14.sp)
                 }
             }
 

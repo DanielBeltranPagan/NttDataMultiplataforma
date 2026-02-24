@@ -53,7 +53,7 @@ fun App() {
                                     painter = painterResource(Res.drawable.logo),
                                     contentDescription = "NTT DATA Logo",
                                     contentScale = ContentScale.Fit,
-                                    modifier = Modifier.height(40.dp), // Altura razonable
+                                    modifier = Modifier.height(60.dp), // Altura razonable
                                     colorFilter = tint(Color.White)
                                 )
                             },

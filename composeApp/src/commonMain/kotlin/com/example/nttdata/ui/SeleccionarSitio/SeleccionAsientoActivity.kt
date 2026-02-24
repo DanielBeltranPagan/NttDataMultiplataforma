@@ -32,6 +32,8 @@ import nttdata.composeapp.generated.resources.logo
 
 // 3. COIL 3 (Multiplatform)
 import coil3.compose.rememberAsyncImagePainter
+import com.example.nttdata.ui.GestionarReserva.ReservasActivity
+import com.example.nttdata.ui.GestionarReserva.ReservasViewModel
 import nttdata.composeapp.generated.resources.oficina
 
 class SeleccionAsientoActivity : Screen{
@@ -47,32 +49,32 @@ data class Asiento(
     val yPercent: Float,
     val isAvailable: Boolean,
     val isMeetingRoom: Boolean = false,
-    val favorito: Boolean = false
 )
 
 @Composable
 fun SeleccionAsientoScreen() {
     var selectedAsientoId by remember { mutableStateOf<String?>(null) }
     var showReservaDialog by remember { mutableStateOf(false) }
+    val navigator = LocalNavigator.currentOrThrow
 
     // Mock data - Reusing coordinates verified in EstadoSucursalActivity
     val topCluster = listOf(
         Asiento("1", 0.93f, 0.13f, true), Asiento("2", 0.93f, 0.33f, true),
-        Asiento("3", 0.93f, 0.53f, true), Asiento("4", 0.93f, 0.73f, true, favorito = true),
+        Asiento("3", 0.93f, 0.53f, true), Asiento("4", 0.93f, 0.73f, true),
         Asiento("5", 0.79f, 0.13f, true), Asiento("6", 0.79f, 0.33f, true),
         Asiento("7", 0.79f, 0.53f, true), Asiento("8", 0.79f, 0.73f, true),
     )
 
     val bottomCluster = listOf(
         Asiento("9", 0.22f, 0.10f, true),
-        Asiento("10", 0.22f, 0.30f, true, favorito = true),
+        Asiento("10", 0.22f, 0.30f, true),
         Asiento("11", 0.22f, 0.50f, true),
         Asiento("12", 0.22f, 0.70f, true),
         Asiento("13", 0.22f, 0.90f, true),
         Asiento("14", 0.07f, 0.10f, true),
         Asiento("15", 0.07f, 0.30f, true),
         Asiento("16", 0.07f, 0.50f, true),
-        Asiento("17", 0.07f, 0.70f, true, favorito = true),
+        Asiento("17", 0.07f, 0.70f, true),
         Asiento("18", 0.07f, 0.90f, true)
     )
 
@@ -121,7 +123,6 @@ fun SeleccionAsientoScreen() {
                     val isSelected = asiento.id == selectedAsientoId
                     val color = when {
                         isSelected -> Color(0xFF0072BB) // Blue for selected
-                        asiento.favorito -> Color(0xFF0072BB) // Blue for favorite
                         asiento.isAvailable -> Color.Green // Standard Green
                         else -> Color.Red // Red for occupied/unavailable
                     }
@@ -182,10 +183,12 @@ fun SeleccionAsientoScreen() {
                   Text(text = "Desea confirmar la reserva?")
 
 
-
                 },
                 confirmButton = {
-                    TextButton(onClick = { showReservaDialog = false }) {
+                    TextButton(onClick = {
+                        showReservaDialog = false
+                        navigator.push(ReservasActivity(reservasViewModel = ReservasViewModel()))
+                    }) {
                         Text("Confirmar")
                     }
                 },

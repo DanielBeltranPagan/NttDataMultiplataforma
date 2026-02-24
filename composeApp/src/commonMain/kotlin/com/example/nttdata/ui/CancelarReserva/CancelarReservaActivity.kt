@@ -37,6 +37,7 @@ import coil3.compose.rememberAsyncImagePainter
 import com.example.nttdata.ui.GestionarReserva.Reserva
 import com.example.nttdata.ui.GestionarReserva.ReservaItem
 import com.example.nttdata.ui.GestionarReserva.ReservasActivity
+import com.example.nttdata.ui.GestionarReserva.ReservasViewModel
 import kotlinx.coroutines.launch
 
 class CancelarReservaActivity : Screen {
@@ -74,18 +75,7 @@ fun CancelarReservaScreen() {
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Seguro que quiere cancelar la siguiente Reserva?",
-                        color = Color(0xFF0072BB),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                }
+
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -104,41 +94,13 @@ fun CancelarReservaScreen() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Button(
-                    onClick = { /* Handle No Cancel */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                        .height(55.dp)
-                ) {
-                    Text(text = "No cancelar reserva", fontSize = 14.sp)
-                }
 
-                Button(
-                    onClick = { /* Handle Cancel */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp)
-                        .height(55.dp)
-                ) {
-                    Text(text = "Cancelar reserva", fontSize = 14.sp)
-                }
-            }
         }
     }
 }
 @Composable
 fun CancelarReservaItem(reserva: Reserva, navigator: Navigator) {
-    val snackbarHostState = remember { SnackbarHostState() }
+    var showReservaDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     Card(
@@ -191,9 +153,7 @@ fun CancelarReservaItem(reserva: Reserva, navigator: Navigator) {
 
                 Button(
                     onClick = {
-                        scope.launch {
-                            snackbarHostState.showSnackbar("Reserva cancelada")
-                        }
+                        showReservaDialog=true
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                     shape = RoundedCornerShape(20.dp),
@@ -203,6 +163,34 @@ fun CancelarReservaItem(reserva: Reserva, navigator: Navigator) {
                     Text(text = "Cancelar reserva", fontSize = 12.sp)
                 }
             }
+            if (showReservaDialog) {
+                AlertDialog(
+                    onDismissRequest = { showReservaDialog = false },
+                    title = {
+                        Text(text = "Confirmación de la canecelación", style = MaterialTheme.typography.headlineSmall)
+                    },
+                    text = {
+                        Text(text = "Esta seguro que quiere cancelar la reserva?")
+
+
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showReservaDialog = false
+                            navigator.push(ReservasActivity(reservasViewModel = ReservasViewModel()))
+                        }) {
+                            Text("Confirmar cancelación")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showReservaDialog = false }) {
+                            Text("No cancelar")
+                        }
+                    })
+
+            }
         }
     }
+
 }
+
