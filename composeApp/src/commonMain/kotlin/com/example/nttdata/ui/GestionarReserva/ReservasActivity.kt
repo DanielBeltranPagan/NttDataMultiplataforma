@@ -170,15 +170,22 @@ fun ReservaSalaItem(sala: ReservaSalaDTO) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = "Fecha: ${sala.fecha ?: "Sin fecha"}", fontSize = 14.sp)
                     Text(
-                        text = "Hora: ${sala.horaInicio?.take(5) ?: "00:00"}",
-                        fontSize = 14.sp
+                        // Usamos substringBefore para quitar cualquier T o espacio,
+                        // y take(5) para quedarnos solo con HH:mm
+                        text = "Hora: ${sala.horaInicio?.substringAfter("T")?.take(5) ?: "00:00"}-${
+                            sala.horaFin?.substringAfter(
+                                "T"
+                            )?.take(5) ?: "00:00"
+                        }",
+                        fontSize = 14.sp,
+                        color = Color.Black
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Spacer(modifier = Modifier.height(24.dp))
                     // Aquí usamos idSala en lugar de idPuesto
                     Text(
-                        text = "Sala nro: ${sala.idSala ?: "N/A"}",
+                        text = "Sala numero: ${sala.idSala ?: "N/A"}",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
