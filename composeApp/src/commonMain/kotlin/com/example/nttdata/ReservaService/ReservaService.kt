@@ -1,6 +1,7 @@
 package com.example.nttdata.ReservaService
 
 import com.example.nttdata.DTOS.ReservaPuestoDTO
+import com.example.nttdata.DTOS.ReservaSalaDTO
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.delete
@@ -47,17 +48,14 @@ object ReservaService {
             e.printStackTrace()
         }
     }
-    suspend fun modificarReservaPuesto(idReserva: Int, reservaActualizada: ReservaPuestoDTO): Boolean {
+    suspend fun modificarReservaPuesto(idReserva: Int, reserva: ReservaPuestoDTO): Boolean {
         return try {
             val response = client.put("$BASE_URL/reservas-puestos/$idReserva") {
                 contentType(ContentType.Application.Json)
-                setBody(reservaActualizada)
+                setBody(reserva)
             }
             response.status.value in 200..299
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
+        } catch (e: Exception) { false }
     }
 
     suspend fun eliminarReservaSala(idReserva: Int): Boolean {
@@ -68,5 +66,15 @@ object ReservaService {
             e.printStackTrace()
             false
         }
+    }
+
+    suspend fun modificarReservaSala(idReserva: Int, reserva: ReservaSalaDTO): Boolean {
+        return try {
+            val response = client.put("$BASE_URL/reservas-salas/$idReserva") {
+                contentType(ContentType.Application.Json)
+                setBody(reserva)
+            }
+            response.status.value in 200..299
+        } catch (e: Exception) { false }
     }
 }

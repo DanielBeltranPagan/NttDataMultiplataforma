@@ -31,17 +31,6 @@ kotlin {
 
     jvm()
 
-    js {
-        browser()
-        binaries.executable()
-    }
-
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
-
     sourceSets {
         // Centralizamos versiones que no están en el libs.versions.toml
         val ktorVersion = "3.0.0"
@@ -83,6 +72,14 @@ kotlin {
             implementation("cafe.adriel.voyager:voyager-navigator:$voyagerVersion")
             implementation("cafe.adriel.voyager:voyager-screenmodel:$voyagerVersion")
             implementation("cafe.adriel.voyager:voyager-transitions:$voyagerVersion")
+
+
+            // Para los ViewModels en Compose Multiplatform
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+            // La librería de los Pickers
+
+            implementation("network.chaintech:kmp-date-time-picker:1.0.7")
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
         }
 
         jvmMain.dependencies {

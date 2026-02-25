@@ -133,12 +133,11 @@ fun ReservaItem(reserva: ReservaPuestoDTO) {
                 }
 
                 Button(
-                    onClick = { navigator.push(paginaModificarReservaScreen()) },
+                    onClick = { navigator.push(paginaModificarReservaScreen(reserva)) }, // <-- Pasamos 'reserva'
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
-                    shape = RoundedCornerShape(20.dp),
-                    modifier = Modifier.height(36.dp)
+                    // ... rest
                 ) {
-                    Text(text = "Modificar", fontSize = 12.sp)
+                    Text("Modificar")
                 }
             }
         }
@@ -204,7 +203,7 @@ fun ReservaSalaItem(sala: ReservaSalaDTO) {
                 }
 
                 Button(
-                    onClick = { navigator.push(paginaModificarReservaScreen()) },
+                    onClick = { navigator.push(paginaModificarReservaScreen(sala)) }, // Cambiado para pasar 'sala'
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                     shape = RoundedCornerShape(20.dp),
                     modifier = Modifier.height(36.dp)

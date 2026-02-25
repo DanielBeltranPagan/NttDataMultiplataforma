@@ -36,7 +36,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.nttdata.SesionManager.SessionManager
-import com.example.nttdata.ui.ModificarReserva.ModificarField
 import com.example.nttdata.ui.SeleccionarSitio.SeleccionAsientoActivity
 import com.example.nttdata.ui.RealizarReserva.ReservationViewModel
 import network.chaintech.kmp_date_time_picker.ui.datepicker.WheelDatePickerView
