@@ -5,21 +5,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ReservaPuestoDTO(
-    @SerialName("idReserva")
     val idReserva: Int? = null,
-
-    @SerialName("fecha")
-    val fecha: String,
-
-    @SerialName("horaInicio") // Asegúrate de que coincida con el "private LocalDateTime horaInicio" de Java
-    val horaInicio: String,
-
-    @SerialName("horaFin")
-    val horaFin: String,
-
-    @SerialName("idPuesto")
-    val idPuesto: Int,
-
-    @SerialName("idUsuario")
-    val idUsuario: Int
+    val fecha: String? = "",
+    val horaInicio: String? = "",
+    val horaFin: String? = "",
+    val idPuesto: Int? = null,
+    val idUsuario: Int? = null
 )

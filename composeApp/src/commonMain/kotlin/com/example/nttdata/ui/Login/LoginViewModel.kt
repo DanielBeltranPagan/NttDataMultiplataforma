@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.nttdata.SesionManager.SessionManager
 import com.example.nttdata.DTOS.SucursalDTO // Asegúrate de importar tu SucursalDTO
+import com.example.nttdata.DTOS.UsuarioDTO
 import kotlinx.coroutines.launch
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -74,12 +75,14 @@ class LoginViewModel : ViewModel() {
                 }
 
                 if (response.status.value == 200) {
-                    val usuarioData = response.body<LoginResponse>()
+                    val usuarioData = response.body<UsuarioDTO>()
 
                     // 3. Guardamos los datos REALES en el SessionManager
-                    SessionManager.idUsuario = usuarioData.id
+                    SessionManager.idUsuario = usuarioData.idUsuario
                     SessionManager.correo = usuarioData.correo ?: ""
                     SessionManager.rango = usuarioData.rango ?: "USER"
+                    SessionManager.reservasPuestos = usuarioData.reservasPuestos
+                    SessionManager.reservasSalas = usuarioData.reservasSalas
 
                     // Si el usuario ya tiene sucursal, la guardamos también
                     usuarioData.sucursal?.let {

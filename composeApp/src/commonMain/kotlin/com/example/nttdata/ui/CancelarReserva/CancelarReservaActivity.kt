@@ -12,15 +12,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.nttdata.DTOS.ReservaPuestoDTO
-import com.example.nttdata.ui.GestionarReserva.ReservasActivity
+import com.example.nttdata.DTOS.ReservaSalaDTO
 
-// Pasamos la reserva como parámetro para saber qué estamos cancelando
-class CancelarReservaActivity(val reserva: ReservaPuestoDTO) : Screen {
+class CancelarReservaActivity(val reserva: Any) : Screen {
     @Composable
     override fun Content() {
         CancelarReservaScreen(reserva)
@@ -28,7 +28,7 @@ class CancelarReservaActivity(val reserva: ReservaPuestoDTO) : Screen {
 }
 
 @Composable
-fun CancelarReservaScreen(reserva: ReservaPuestoDTO) {
+fun CancelarReservaScreen(reserva: Any) {
     val navigator = LocalNavigator.currentOrThrow
 
     Column(
@@ -51,7 +51,6 @@ fun CancelarReservaScreen(reserva: ReservaPuestoDTO) {
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            // Llamamos al item con los datos reales
             CancelarReservaItem(reserva, navigator)
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -60,8 +59,24 @@ fun CancelarReservaScreen(reserva: ReservaPuestoDTO) {
 }
 
 @Composable
-fun CancelarReservaItem(reserva: ReservaPuestoDTO, navigator: Navigator) {
+fun CancelarReservaItem(
+    reserva: Any,
+    navigator: Navigator,
+    viewModel: CancelarReservaViewModel = viewModel()
+) {
     var showReservaDialog by remember { mutableStateOf(false) }
+
+    // Extraemos datos según el tipo de objeto
+    val idReserva = if (reserva is ReservaPuestoDTO) reserva.idReserva else (reserva as ReservaSalaDTO).idReserva
+    val fecha = if (reserva is ReservaPuestoDTO) reserva.fecha else (reserva as ReservaSalaDTO).fecha
+    val hora = if (reserva is ReservaPuestoDTO) reserva.horaInicio else (reserva as ReservaSalaDTO).horaInicio
+    val etiquetaPosicion = if (reserva is ReservaPuestoDTO) "Puesto: ${reserva.idPuesto}" else "Sala: ${(reserva as ReservaSalaDTO).idSala}"
+
+    LaunchedEffect(viewModel.deleteSuccess) {
+        if (viewModel.deleteSuccess) {
+            navigator.pop()
+        }
+    }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -76,17 +91,17 @@ fun CancelarReservaItem(reserva: ReservaPuestoDTO, navigator: Navigator) {
             ) {
                 Column {
                     Text(
-                        text = "Reserva #${reserva.idReserva}",
+                        text = "Reserva #${idReserva ?: 0}",
                         color = Color(0xFF0072BB),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "Fecha: ${reserva.fecha}", fontSize = 14.sp)
-                    Text(text = "Hora: ${reserva.horaInicio.take(5)}", fontSize = 14.sp)
+                    Text(text = "Fecha: ${fecha ?: "---"}", fontSize = 14.sp)
+                    Text(text = "Hora: ${hora?.take(5) ?: "--:--"}", fontSize = 14.sp)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(text = "Puesto: ${reserva.idPuesto}", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                    Text(text = etiquetaPosicion, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 }
             }
 
@@ -94,13 +109,10 @@ fun CancelarReservaItem(reserva: ReservaPuestoDTO, navigator: Navigator) {
             HorizontalDivider(color = Color(0xFF0072BB), thickness = 1.dp)
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Botón Volver
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
-                    onClick = { navigator.pop() }, // Simplemente vuelve atrás
+                    onClick = { navigator.pop() },
+                    enabled = !viewModel.isDeleting,
                     modifier = Modifier.weight(1f),
                     border = BorderStroke(1.dp, Color(0xFF0072BB)),
                     shape = RoundedCornerShape(20.dp)
@@ -108,9 +120,9 @@ fun CancelarReservaItem(reserva: ReservaPuestoDTO, navigator: Navigator) {
                     Text(text = "No cancelar", color = Color(0xFF0072BB))
                 }
 
-                // Botón Confirmar
                 Button(
                     onClick = { showReservaDialog = true },
+                    enabled = !viewModel.isDeleting,
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                     shape = RoundedCornerShape(20.dp)
@@ -121,20 +133,41 @@ fun CancelarReservaItem(reserva: ReservaPuestoDTO, navigator: Navigator) {
 
             if (showReservaDialog) {
                 AlertDialog(
-                    onDismissRequest = { showReservaDialog = false },
+                    onDismissRequest = { if (!viewModel.isDeleting) showReservaDialog = false },
                     title = { Text(text = "Confirmar acción") },
-                    text = { Text(text = "¿Estás seguro de que quieres eliminar esta reserva permanentemente?") },
+                    text = {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            if (viewModel.isDeleting) {
+                                CircularProgressIndicator(color = Color(0xFF0072BB))
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text("Procesando baja...")
+                            } else {
+                                Text(text = "¿Estás seguro de que quieres eliminar esta reserva permanentemente?")
+                                if (viewModel.errorMessage.isNotEmpty()) {
+                                    Text(text = viewModel.errorMessage, color = Color.Red, fontSize = 12.sp)
+                                }
+                            }
+                        }
+                    },
                     confirmButton = {
-                        TextButton(onClick = {
-                            showReservaDialog = false
-                            // Aquí iría la llamada a la API DELETE en el futuro
-                            navigator.push(ReservasActivity())
-                        }) {
-                            Text("Confirmar", color = Color.Red)
+                        TextButton(
+                            enabled = !viewModel.isDeleting,
+                            onClick = {
+                                if (reserva is ReservaPuestoDTO) {
+                                    viewModel.confirmarCancelacionPuesto(reserva.idReserva)
+                                } else if (reserva is ReservaSalaDTO) {
+                                    viewModel.confirmarCancelacionSala(reserva.idReserva)
+                                }
+                            }
+                        ) {
+                            Text("Confirmar", color = if (viewModel.isDeleting) Color.Gray else Color.Red)
                         }
                     },
                     dismissButton = {
-                        TextButton(onClick = { showReservaDialog = false }) {
+                        TextButton(
+                            enabled = !viewModel.isDeleting,
+                            onClick = { showReservaDialog = false }
+                        ) {
                             Text("Atrás")
                         }
                     }
