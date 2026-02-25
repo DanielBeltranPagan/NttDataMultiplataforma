@@ -47,14 +47,16 @@ object ReservaService {
             e.printStackTrace()
         }
     }
-    suspend fun modificarReservaPuesto(idReserva: Int,reservaActualizada: ReservaPuestoDTO){
-        try{
-            val response= client.put("$BASE_URL/reservas-puestos/$idReserva"){
+    suspend fun modificarReservaPuesto(idReserva: Int, reservaActualizada: ReservaPuestoDTO): Boolean {
+        return try {
+            val response = client.put("$BASE_URL/reservas-puestos/$idReserva") {
                 contentType(ContentType.Application.Json)
                 setBody(reservaActualizada)
             }
-        }catch (e: Exception){
+            response.status.value in 200..299
+        } catch (e: Exception) {
             e.printStackTrace()
+            false
         }
     }
 

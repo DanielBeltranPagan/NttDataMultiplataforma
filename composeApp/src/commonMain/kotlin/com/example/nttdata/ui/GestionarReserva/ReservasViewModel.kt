@@ -8,5 +8,5 @@ class ReservasViewModel : ViewModel() {
     val reservasPuestos get() = SessionManager.reservasPuestos
     val reservasSalas get() = SessionManager.reservasSalas
 
-    // Eliminamos todo el bloque init e httpClient
+
 }

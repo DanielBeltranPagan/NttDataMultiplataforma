@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cafe.adriel.voyager.core.screen.Screen
+import com.example.nttdata.DTOS.ReservaPuestoDTO
+import com.example.nttdata.ReservaService.ReservaService
 import com.example.nttdata.SesionManager.SessionManager
 import com.example.nttdata.ui.RealizarReserva.ClickableReservationField
 import com.example.nttdata.ui.RealizarReserva.ReservationField
@@ -112,7 +114,7 @@ fun ModificarScreen(viewModel : ModificarReservaViewModel= viewModel()) {
             )
             ClickableReservationField(
                 label = "Fecha",
-                value = viewModel.fecha,
+                value = viewModel.fecha.toString(),
                 placeholder = "Seleccione una fecha",
                 onClick = {
                     showDatePicker=true
@@ -121,7 +123,7 @@ fun ModificarScreen(viewModel : ModificarReservaViewModel= viewModel()) {
             )
             ClickableReservationField(
                 label = "Hora",
-                value = viewModel.hora,
+                value = viewModel.hora.toString(),
                 placeholder = "Seleccione una hora",
                 onClick = {
                     showTimePicker=true
@@ -134,6 +136,7 @@ fun ModificarScreen(viewModel : ModificarReservaViewModel= viewModel()) {
             Button(
                 onClick = {
                     scope.launch {
+                        ReservaService.modificarReservaPuesto(re)
                         snackbarHostState.showSnackbar("Reserva cancelada")
                     }
                 },
