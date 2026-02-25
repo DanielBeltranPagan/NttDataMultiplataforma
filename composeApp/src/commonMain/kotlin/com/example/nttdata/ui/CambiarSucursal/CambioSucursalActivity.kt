@@ -147,33 +147,26 @@ fun CambioSucursalScreen(viewModel: CambiarSucursalScreenModel = viewModel()) {
             // 3. Botón Confirmar
             Button(
                 onClick = {
-                    // 1. Buscamos el objeto sucursal que coincida con el nombre guardado en el ViewModel
                     val sucursalSeleccionada = viewModel.listaSucursales.find {
                         it.nombre == viewModel.sucursalActualNombre
                     }
 
                     val userId = SessionManager.idUsuario
 
-                    // 2. Verificamos que tengamos tanto al usuario como a la sucursal encontrada
                     if (userId != null && sucursalSeleccionada != null) {
-
-                        // Extraemos el ID de forma segura
                         val idSucursal = sucursalSeleccionada.id_sucursal
 
                         if (idSucursal != null) {
-                            // 3. Mandamos el ID al servidor (IntelliJ)
+                            // Llamamos a la función y le pasamos lo que debe hacer si sale bien
                             viewModel.guardarCambioEnServidor(
                                 idUsuario = userId,
-                                idSucursal = idSucursal
+                                idSucursal = idSucursal,
+                                onSuccess = {
+                                    // ESTO SOLO SE EJECUTA SI EL SERVIDOR RESPONDE 200 OK
+                                    SessionManager.nombreSucursal = sucursalSeleccionada.nombre
+                                    navigator.pop()
+                                }
                             )
-
-                            // 4. Actualizamos el SessionManager local con los datos nuevos
-                            SessionManager.nombreSucursal = sucursalSeleccionada.nombre
-                            // Si tu SessionManager guarda el ID, hazlo también:
-                            // SessionManager.idSucursal = idSucursal
-
-                            // 5. Volvemos atrás
-                            navigator.pop()
                         }
                     }
                 },
