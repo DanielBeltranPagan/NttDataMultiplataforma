@@ -35,6 +35,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.nttdata.SesionManager.SessionManager
 import com.example.nttdata.ui.ModificarReserva.ModificarField
 import com.example.nttdata.ui.SeleccionarSitio.SeleccionAsientoActivity
 import com.example.nttdata.ui.RealizarReserva.ReservationViewModel
@@ -109,8 +110,9 @@ fun ReservationScreen(viewModel: ReservationViewModel = viewModel()) {
 
             ReservationField(
                 label = "Sucursal",
-                value = viewModel.sucursal,
-                onValueChange = { viewModel.onSucursalChanged(it) }
+                value = SessionManager.nombreSucursal,
+                onValueChange = {},
+                readOnly = true
             )
             ClickableReservationField(
                 label = "Fecha",
@@ -155,7 +157,7 @@ fun ReservationScreen(viewModel: ReservationViewModel = viewModel()) {
 }
 
         @Composable
-        fun ReservationField(label: String, value: String,onValueChange: (String) -> Unit) {
+        fun ReservationField(label: String, value: String,onValueChange: (String) -> Unit,readOnly : Boolean) {
             Column(modifier = Modifier.padding(bottom = 16.dp)) {
                 Text(
                     text = label,
@@ -163,10 +165,12 @@ fun ReservationScreen(viewModel: ReservationViewModel = viewModel()) {
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(bottom = 8.dp)
+
                 )
                 TextField(
                     value = value,
                     onValueChange = onValueChange,
+                    readOnly=readOnly,
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFFE3F2FD),
