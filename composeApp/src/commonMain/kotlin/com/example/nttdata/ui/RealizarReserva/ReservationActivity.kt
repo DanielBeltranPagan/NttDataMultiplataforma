@@ -1,16 +1,11 @@
 package com.example.nttdata.ui.RealizarReserva
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,32 +15,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter.Companion.tint
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.jetbrains.compose.resources.painterResource
-//import nttdata_app.composeapp.generated.resources.Res
-//import nttdata_app.composeapp.generated.resources.logo
-import coil3.compose.rememberAsyncImagePainter
-import coil3.compose.AsyncImage
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.example.nttdata.SesionManager.SessionManager
 import com.example.nttdata.ui.SeleccionarSitio.SeleccionAsientoActivity
-import com.example.nttdata.ui.RealizarReserva.ReservationViewModel
 import network.chaintech.kmp_date_time_picker.ui.datepicker.WheelDatePickerView
 import network.chaintech.kmp_date_time_picker.ui.timepicker.WheelTimePickerView
 
-
-class ReservationActivityScreen(val reservationViewModel: ReservationViewModel = ReservationViewModel()): Screen{
+class ReservationActivityScreen(val reservationViewModel: ReservationViewModel = ReservationViewModel()): Screen {
     @Composable
     override fun Content() {
-        ReservationScreen(viewModel=reservationViewModel)
+        ReservationScreen(viewModel = reservationViewModel)
     }
 }
 
@@ -55,7 +41,8 @@ fun ReservationScreen(viewModel: ReservationViewModel = viewModel()) {
     val navigator: Navigator = LocalNavigator.currentOrThrow
 
     var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
+    var showStartTimePicker by remember { mutableStateOf(false) }
+    var showEndTimePicker by remember { mutableStateOf(false) }
 
     WheelDatePickerView(
         modifier = Modifier.fillMaxWidth(),
@@ -70,29 +57,38 @@ fun ReservationScreen(viewModel: ReservationViewModel = viewModel()) {
         onDismiss = { showDatePicker = false }
     )
 
+    WheelTimePickerView(
+        modifier = Modifier.fillMaxWidth(),
+        showTimePicker = showStartTimePicker,
+        title = "Selecciona Hora Comienzo",
+        doneLabel = "Aceptar",
+        height = 200.dp,
+        onDoneClick = { localTime ->
+            viewModel.onHoraInicioChanged(localTime.toString())
+            showStartTimePicker = false
+        },
+        onDismiss = { showStartTimePicker = false }
+    )
 
     WheelTimePickerView(
         modifier = Modifier.fillMaxWidth(),
-        showTimePicker = showTimePicker,
-        title = "Selecciona Hora",
+        showTimePicker = showEndTimePicker,
+        title = "Selecciona Hora Finalizar",
         doneLabel = "Aceptar",
-        height = 200.dp, //
+        height = 200.dp,
         onDoneClick = { localTime ->
-            viewModel.onHoraChanged(localTime.toString())
-            showTimePicker = false
+            viewModel.onHoraChangedFinal(localTime.toString())
+            showEndTimePicker = false
         },
-        onDismiss = { showTimePicker = false }
+        onDismiss = { showEndTimePicker = false }
     )
-
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .windowInsetsPadding(WindowInsets.systemBars) // Handle edge-to-edge padding
+            .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-
-        // Content
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -113,29 +109,34 @@ fun ReservationScreen(viewModel: ReservationViewModel = viewModel()) {
                 onValueChange = {},
                 readOnly = true
             )
+
             ClickableReservationField(
                 label = "Fecha",
                 value = viewModel.fecha,
                 placeholder = "Seleccione una fecha",
-                onClick = {
-                    showDatePicker=true
-
-                }
+                onClick = { showDatePicker = true }
             )
-            ClickableReservationField(
-                label = "Hora",
-                value = viewModel.hora,
-                placeholder = "Seleccione una hora",
-                onClick = {
-                   showTimePicker=true
 
-                }
+            ClickableReservationField(
+                label = "Hora Inicio",
+                value = viewModel.horaInicio,
+                placeholder = "Seleccione una hora inicio",
+                onClick = { showStartTimePicker = true }
+            )
+
+            ClickableReservationField(
+                label = "Hora Fin",
+                value = viewModel.horaFinal,
+                placeholder = "Seleccione una hora Final",
+                onClick = { showEndTimePicker = true }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { navigator.push(SeleccionAsientoActivity()) },
+                onClick = {
+                    navigator.push(SeleccionAsientoActivity(viewModel.fecha, viewModel.horaInicio, viewModel.horaFinal))
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier
@@ -149,47 +150,12 @@ fun ReservationScreen(viewModel: ReservationViewModel = viewModel()) {
                     color = Color.White
                 )
             }
-
-
         }
     }
 }
 
-        @Composable
-        fun ReservationField(label: String, value: String,onValueChange: (String) -> Unit,readOnly : Boolean) {
-            Column(modifier = Modifier.padding(bottom = 16.dp)) {
-                Text(
-                    text = label,
-                    color = Color(0xFF0072BB),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-
-                )
-                TextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    readOnly=readOnly,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFE3F2FD),
-                        unfocusedContainerColor = Color(0xFFE3F2FD),
-                        disabledContainerColor = Color(0xFFE3F2FD),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                )
-            }
-        }
 @Composable
-fun ClickableReservationField(
-    label: String,
-    value: String,
-    placeholder: String,
-    onClick: () -> Unit
-) {
+fun ReservationField(label: String, value: String, onValueChange: (String) -> Unit, readOnly: Boolean) {
     Column(modifier = Modifier.padding(bottom = 16.dp)) {
         Text(
             text = label,
@@ -198,7 +164,34 @@ fun ClickableReservationField(
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        // Usamos una Box para detectar el click en toda el área
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            readOnly = readOnly,
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color(0xFFE3F2FD),
+                unfocusedContainerColor = Color(0xFFE3F2FD),
+                disabledContainerColor = Color(0xFFE3F2FD),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+            ),
+            shape = RoundedCornerShape(8.dp)
+        )
+    }
+}
+
+@Composable
+fun ClickableReservationField(label: String, value: String, placeholder: String, onClick: () -> Unit) {
+    Column(modifier = Modifier.padding(bottom = 16.dp)) {
+        Text(
+            text = label,
+            color = Color(0xFF0072BB),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -216,9 +209,3 @@ fun ClickableReservationField(
         }
     }
 }
-
-    @Composable
-    fun PreviewReservationScreen() {
-        ReservationScreen()
-    }
-

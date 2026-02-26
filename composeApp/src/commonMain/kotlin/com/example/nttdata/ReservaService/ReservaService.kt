@@ -8,6 +8,7 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
@@ -17,12 +18,12 @@ import kotlinx.serialization.json.Json
 object ReservaService {
 
     private val client = HttpClient {
-        // Simplemente 'install', sin el prefijo HttpClientConfig
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
                 prettyPrint = true
                 isLenient = true
+                explicitNulls=false
             })
         }
     }
@@ -38,16 +39,28 @@ object ReservaService {
             false
         }
     }
-    suspend fun crearReservaPuesto(reserva: ReservaPuestoDTO){
+
+    suspend fun crearReservaPuesto(reserva: ReservaPuestoDTO): Boolean {
         return try {
-            val response = client.post("$BASE_URL/reservas-puestos"){
+            val response = client.post("$BASE_URL/reservas-puestos") {
                 contentType(ContentType.Application.Json)
                 setBody(reserva)
             }
-        }catch (e: Exception){
+
+            // Verificación detallada del error
+            if (response.status.value !in 200..299) {
+                val errorBody = response.bodyAsText()
+                println("API ERROR DETALLADO: Código ${response.status.value} - Mensaje: $errorBody")
+            }
+
+            response.status.value in 200..299
+        } catch (e: Exception) {
+            println("EXCEPTION EN RESERVA SERVICE: ${e.message}")
             e.printStackTrace()
+            false
         }
     }
+
     suspend fun modificarReservaPuesto(idReserva: Int, reserva: ReservaPuestoDTO): Boolean {
         return try {
             val response = client.put("$BASE_URL/reservas-puestos/$idReserva") {
