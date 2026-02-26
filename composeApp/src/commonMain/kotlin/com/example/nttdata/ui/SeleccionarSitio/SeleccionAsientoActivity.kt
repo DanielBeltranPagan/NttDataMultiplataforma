@@ -139,6 +139,7 @@ fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String)
                 text = { Text("¿Confirmar reserva del asiento $selectedAsientoId para el $fecha?") },
                 confirmButton = {
                     TextButton(onClick = {
+
                         // 1. Limpiamos y formateamos las horas con segundos
                         val horaInicioSegundos = if (horaInicio.length == 5) "$horaInicio:00" else horaInicio
                         val horaFinSegundos = if (horaFinal.length == 5) "$horaFinal:00" else horaFinal
@@ -151,6 +152,7 @@ fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String)
                             idPuesto = selectedAsientoId?.toIntOrNull() ?: 0, // Usar el real
                             idUsuario = SessionManager.idUsuario ?: 0        // Usar el real
                         )
+                        println("DATOS RESERVA: fecha='${reserva.fecha}' horaInicio='${reserva.horaInicio}' horaFin='${reserva.horaFin}' idPuesto=${reserva.idPuesto} idUsuario=${reserva.idUsuario}")
 
                         scope.launch {
                             val exito = ReservaService.crearReservaPuesto(reserva)
