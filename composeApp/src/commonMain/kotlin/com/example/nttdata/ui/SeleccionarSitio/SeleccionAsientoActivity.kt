@@ -54,17 +54,6 @@ fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String)
     val navigator = LocalNavigator.currentOrThrow
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        puestosEstado = PuestoService.getPuestosConEstado(idPlanta = 1, fecha = fecha)
-        isLoading = false
-    }
-
-    if (isLoading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = Color(0xFF0072BB))
-        }
-        return
-    }
     val allAsientos = listOf(
         Asiento("1", 0.93f, 0.13f, true), Asiento("2", 0.93f, 0.33f, true),
         Asiento("3", 0.93f, 0.53f, true), Asiento("4", 0.93f, 0.73f, true),
@@ -79,7 +68,15 @@ fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String)
     )
 
     LaunchedEffect(Unit) {
-        selectedAsientoId = "8"
+        puestosEstado = PuestoService.getPuestosConEstado(idPlanta = 1, fecha = fecha)
+        isLoading = false
+    }
+
+    if (isLoading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = Color(0xFF0072BB))
+        }
+        return
     }
 
     Column(
@@ -135,16 +132,22 @@ fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String)
                             .clickable { if (!estaOcupado && !asiento.isMeetingRoom) selectedAsientoId = asiento.id }
                     )
                 }
-                }
             }
         }
 
-        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+        ) {
             Button(
                 onClick = { if (selectedAsientoId != null) showReservaDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0072BB)),
                 shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.fillMaxWidth().height(50.dp).shadow(4.dp, RoundedCornerShape(10.dp))
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .shadow(4.dp, RoundedCornerShape(10.dp))
             ) {
                 Text("Confirmar Reserva", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
@@ -157,26 +160,24 @@ fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String)
                 text = { Text("¿Confirmar reserva del asiento $selectedAsientoId para el $fecha?") },
                 confirmButton = {
                     TextButton(onClick = {
-
-                        // 1. Limpiamos y formateamos las horas con segundos
                         val horaInicioSegundos = if (horaInicio.length == 5) "$horaInicio:00" else horaInicio
                         val horaFinSegundos = if (horaFinal.length == 5) "$horaFinal:00" else horaFinal
 
-                        // 2. Usamos el ID del asiento seleccionado y el usuario de la sesión
                         val reserva = ReservaPuestoDTO(
                             fecha = fecha.trim(),
                             horaInicio = horaInicioSegundos,
                             horaFin = horaFinSegundos,
-                            idPuesto = selectedAsientoId?.toIntOrNull() ?: 0, // Usar el real
-                            idUsuario = SessionManager.idUsuario ?: 0        // Usar el real
+                            idPuesto = selectedAsientoId?.toIntOrNull() ?: 0,
+                            idUsuario = SessionManager.idUsuario ?: 0
                         )
-                        println("DATOS RESERVA: fecha='${reserva.fecha}' horaInicio='${reserva.horaInicio}' horaFin='${reserva.horaFin}' idPuesto=${reserva.idPuesto} idUsuario=${reserva.idUsuario}")
 
                         scope.launch {
                             val exito = ReservaService.crearReservaPuesto(reserva)
                             if (exito) {
+                                SessionManager.reservasPuestos = SessionManager.reservasPuestos + reserva
                                 showReservaDialog = false
-                                // Aquí podrías usar navigator.popUntilRoot() o ir a ReservasActivity
+                                navigator.popUntilRoot()
+                                navigator.push(ReservasActivity())
                             }
                         }
                     }) {
@@ -191,3 +192,4 @@ fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String)
             )
         }
     }
+}
