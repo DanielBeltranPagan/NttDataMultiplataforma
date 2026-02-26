@@ -19,10 +19,12 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.example.nttdata.DTOS.PuestoTrabajoDTO
 import org.jetbrains.compose.resources.painterResource
 import nttdata.composeapp.generated.resources.Res
 import nttdata.composeapp.generated.resources.oficina
 import com.example.nttdata.DTOS.ReservaPuestoDTO
+import com.example.nttdata.PuestoService.PuestoService
 import com.example.nttdata.ReservaService.ReservaService
 import com.example.nttdata.SesionManager.SessionManager
 import com.example.nttdata.ui.GestionarReserva.ReservasActivity
@@ -47,9 +49,22 @@ data class Asiento(
 fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String) {
     var selectedAsientoId by remember { mutableStateOf<String?>(null) }
     var showReservaDialog by remember { mutableStateOf(false) }
+    var puestosEstado by remember { mutableStateOf<List<PuestoTrabajoDTO>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
     val navigator = LocalNavigator.currentOrThrow
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(Unit) {
+        puestosEstado = PuestoService.getPuestosConEstado(idPlanta = 1, fecha = fecha)
+        isLoading = false
+    }
+
+    if (isLoading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = Color(0xFF0072BB))
+        }
+        return
+    }
     val allAsientos = listOf(
         Asiento("1", 0.93f, 0.13f, true), Asiento("2", 0.93f, 0.33f, true),
         Asiento("3", 0.93f, 0.53f, true), Asiento("4", 0.93f, 0.73f, true),
@@ -97,11 +112,13 @@ fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String)
                 )
 
                 allAsientos.forEach { asiento ->
+                    val puesto = puestosEstado.find { it.idPuesto == asiento.id.toIntOrNull() }
+                    val estaOcupado = puesto?.ocupado ?: false
                     val isSelected = asiento.id == selectedAsientoId
                     val color = when {
                         isSelected -> Color(0xFF0072BB)
-                        asiento.isAvailable -> Color.Green
-                        else -> Color.Red
+                        estaOcupado -> Color.Red
+                        else -> Color.Green
                     }
                     val size = if (asiento.isMeetingRoom) 50.dp else 28.dp
 
@@ -115,8 +132,9 @@ fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String)
                             .clip(CircleShape)
                             .background(color)
                             .border(2.dp, Color.Black, CircleShape)
-                            .clickable { if (asiento.isAvailable) selectedAsientoId = asiento.id }
+                            .clickable { if (!estaOcupado && !asiento.isMeetingRoom) selectedAsientoId = asiento.id }
                     )
+                }
                 }
             }
         }
@@ -173,4 +191,3 @@ fun SeleccionAsientoScreen(fecha: String, horaInicio: String, horaFinal: String)
             )
         }
     }
-}

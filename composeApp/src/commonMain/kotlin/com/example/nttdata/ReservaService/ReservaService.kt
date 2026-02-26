@@ -47,7 +47,6 @@ object ReservaService {
                 setBody(reserva)
             }
 
-            // Verificación detallada del error
             if (response.status.value !in 200..299) {
                 val errorBody = response.bodyAsText()
                 println("API ERROR DETALLADO: Código ${response.status.value} - Mensaje: $errorBody")
@@ -69,6 +68,25 @@ object ReservaService {
             }
             response.status.value in 200..299
         } catch (e: Exception) { false }
+    }
+    suspend fun crearReservaSala(reserva: ReservaSalaDTO): Boolean {
+        return try {
+            val response = client.post("$BASE_URL/reservas-salas") {
+                contentType(ContentType.Application.Json)
+                setBody(reserva)
+            }
+
+            if (response.status.value !in 200..299) {
+                val errorBody = response.bodyAsText()
+                println("API ERROR DETALLADO: Código ${response.status.value} - Mensaje: $errorBody")
+            }
+
+            response.status.value in 200..299
+        } catch (e: Exception) {
+            println("EXCEPTION EN RESERVA SERVICE: ${e.message}")
+            e.printStackTrace()
+            false
+        }
     }
 
     suspend fun eliminarReservaSala(idReserva: Int): Boolean {
