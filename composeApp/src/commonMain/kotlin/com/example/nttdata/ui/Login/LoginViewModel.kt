@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.nttdata.DTOS.LoginDTO
 import com.example.nttdata.SesionManager.SessionManager
-import com.example.nttdata.DTOS.SucursalDTO // Asegúrate de importar tu SucursalDTO
 import com.example.nttdata.DTOS.UsuarioDTO
 import kotlinx.coroutines.launch
 import io.ktor.client.HttpClient
@@ -19,29 +19,17 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.Json
 
-// 1. Petición de login
+// 1. Petición de login: Ahora enviamos 'correo' como String
 @Serializable
 data class LoginRequest(
-    val id: Int,
+    val correo: String,
     val contrasena: String
 )
 
-// 2. Respuesta del servidor (Corregida para que coincida con UsuarioDTO de Java)
-@Serializable
-data class LoginResponse(
-    @SerialName("idUsuario") // <--- CLAVE: Mapea el 'idUsuario' de Java a esta variable
-    val id: Int,
-    val contrasena: String? = null,
-    val correo: String? = null,
-    val rango: String? = "USER",
-    val sucursal: SucursalDTO? = null // Recibimos la sucursal para guardarla en sesión
-)
-
 class LoginViewModel : ViewModel() {
-    var username by mutableStateOf("")
+    var username by mutableStateOf("") // Aquí el usuario escribirá su email
     var password by mutableStateOf("")
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf("")
@@ -58,10 +46,8 @@ class LoginViewModel : ViewModel() {
     }
 
     fun iniciarSesion() {
-        val idInt = username.toIntOrNull()
-
-        if (idInt == null || password.isBlank()) {
-            errorMessage = "Introduce un ID numérico y una contraseña."
+        if (username.isBlank() || password.isBlank()) {
+            errorMessage = "Introduce el correo y la contraseña."
             return
         }
 
@@ -69,32 +55,43 @@ class LoginViewModel : ViewModel() {
             isLoading = true
             errorMessage = ""
             try {
-                val response: HttpResponse = httpClient.post("http://nttdatabackend-env.eba-uxhfxnfh.us-east-1.elasticbeanstalk.com/api/usuarios/$idInt/validar") {
+                val url = "http://nttdatabackend-env.eba-uxhfxnfh.us-east-1.elasticbeanstalk.com/api/usuarios/validar"
+
+                val response: HttpResponse = httpClient.post(url) {
                     contentType(ContentType.Application.Json)
-                    setBody(LoginRequest(id = idInt, contrasena = password))
+                    setBody(LoginDTO(correo = username, contrasena = password))
                 }
 
                 if (response.status.value == 200) {
                     val usuarioData = response.body<UsuarioDTO>()
 
-                    // 3. Guardamos los datos REALES en el SessionManager
+                    // 1. Guardamos los datos básicos
                     SessionManager.idUsuario = usuarioData.idUsuario
                     SessionManager.correo = usuarioData.correo ?: ""
                     SessionManager.rango = usuarioData.rango ?: "USER"
-                    SessionManager.reservasPuestos = usuarioData.reservasPuestos
-                    SessionManager.reservasSalas = usuarioData.reservasSalas
 
-                    // Si el usuario ya tiene sucursal, la guardamos también
-                    usuarioData.sucursal?.let {
-                        SessionManager.nombreSucursal = it.nombre
+                    // 2. CLAVE: Guardamos las reservas que YA vienen dentro de usuarioData
+                    // Asegúrate de que en tu UsuarioDTO estos campos se llamen así
+                    usuarioData.reservasPuestos?.let {
+                        SessionManager.reservasPuestos = it
+                    }
+                    usuarioData.reservasSalas?.let {
+                        SessionManager.reservasSalas = it
+                    }
+
+                    usuarioData.sucursal?.let { suc ->
+                        // Si tu SessionManager tiene un campo 'nombreSucursal' (String)
+                        SessionManager.nombreSucursal = suc.nombre
+
+                        // O si guarda el objeto completo:
+                        // SessionManager.sucursal = suc
                     }
 
                     loginExitoso = true
                 } else {
-                    errorMessage = "ID o contraseña incorrectos."
+                    errorMessage = "Correo o contraseña incorrectos."
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
                 errorMessage = "Error de conexión: ${e.message}"
             } finally {
                 isLoading = false

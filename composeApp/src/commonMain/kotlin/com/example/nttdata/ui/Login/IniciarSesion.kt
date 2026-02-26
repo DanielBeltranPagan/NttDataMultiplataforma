@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,13 +40,11 @@ class paginaIniciarSesionScreen : Screen {
     @Composable
     fun LoginScreen(
         navigator: Navigator,
-        // Usamos el ViewModel que ya tiene la lógica de Ktor y SessionManager
         viewModel: LoginViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
     ) {
-        // Manejo de navegación tras login exitoso
+        // Navegación al éxito
         LaunchedEffect(viewModel.loginExitoso) {
             if (viewModel.loginExitoso) {
-                // Usamos replaceAll para que el usuario no pueda volver atrás al login con el botón del móvil
                 navigator.replaceAll(Pagina2())
                 viewModel.navegacionCompletada()
             }
@@ -89,15 +89,17 @@ class paginaIniciarSesionScreen : Screen {
                         color = Color(0xFF333333)
                     )
 
-                    // Campo ID Usuario (ahora vinculado a la lógica de Int en el ViewModel)
+                    // CAMBIO: Campo optimizado para Email (Texto libre)
                     OutlinedTextField(
                         value = viewModel.username,
                         onValueChange = { viewModel.username = it },
                         label = { Text("Email de usuario") },
+                        placeholder = { Text("ejemplo@nttdata.com") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                         shape = RoundedCornerShape(10.dp),
-                        enabled = !viewModel.isLoading // Bloquear edición mientras carga
+                        enabled = !viewModel.isLoading,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email) // Teclado con '@'
                     )
 
                     // Campo Contraseña
@@ -109,10 +111,11 @@ class paginaIniciarSesionScreen : Screen {
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                         shape = RoundedCornerShape(10.dp),
-                        enabled = !viewModel.isLoading // Bloquear edición mientras carga
+                        enabled = !viewModel.isLoading,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
                     )
 
-                    // Mensaje de Error dinámico (viene de la respuesta del servidor)
+                    // Error dinámico
                     if (viewModel.errorMessage.isNotEmpty()) {
                         Text(
                             text = viewModel.errorMessage,
@@ -125,16 +128,15 @@ class paginaIniciarSesionScreen : Screen {
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Botón Iniciar Sesión con estado de carga
                     Button(
                         onClick = { viewModel.iniciarSesion() },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF0072BB),
-                            disabledContainerColor = Color(0xFF80B9DD) // Color más claro si está cargando
+                            disabledContainerColor = Color(0xFF80B9DD)
                         ),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth().height(55.dp),
-                        enabled = !viewModel.isLoading // Deshabilitar click repetido
+                        enabled = !viewModel.isLoading
                     ) {
                         if (viewModel.isLoading) {
                             CircularProgressIndicator(
